@@ -6,46 +6,50 @@ import threading
 import picamera
 from PIL import Image
 
-GPIO.setmode(GPIO.BCM)  
-# set up GPIO output channel  
-GPIO.setup(4, GPIO.OUT)
-GPIO.output(4,GPIO.LOW)
 
-# Create a pool of image processors
+GPIO.setmode(GPIO.BCM)
+
+pin = 18
+pin_led = 15
+
+GPIO.setup(pin, GPIO.OUT)
+GPIO.output(pin,GPIO.LOW)
+
+GPIO.setup(pin_led, GPIO.OUT)
+GPIO.output(pin_led,GPIO.LOW)
+
+
+# Create a pool of image processors.
 done = False
 lock = threading.Lock()
 pool = []
 
+# Set the resolution and target boundaries.
 res_w = 30
 res_h = 20
-x_range = range(round(res_w / 2 - 2), round(res_w / 2 + 2))
+x_range = range(round(res_w / 2 - 1), round(res_w / 2 + 1))
 y_range = range(round(res_h / 2 - 1), round(res_h / 2 + 1))
-grid = []
-i = 0
-for y in range(1, res_h):
-    for x in range(1, res_w):
-        grid.insert(i, (x, y))
-        i = i + 1
 
+# Tracking target lock vars.
+on_target = 0
 
 class ImageProcessor(threading.Thread):
     def __init__(self):
         super(ImageProcessor, self).__init__()
         self.stream = io.BytesIO()
-        self.event = threading.Event()
+        self.event = threading.Event()  
         self.terminated = False
         self.start()
 
     def run(self):
         # This method runs in a separate thread
         global done
+        global on_target
         while not self.terminated:
             # Wait for an image to be written to the stream
             if self.event.wait(1):
                 try:
                     self.stream.seek(0)
-
-                    GPIO.output(4,GPIO.LOW)
                     
                     img = Image.open(self.stream)
                     pixels = img.load()
@@ -64,13 +68,25 @@ class ImageProcessor(threading.Thread):
                         if (y_center in y_range):
                             if (x_center in x_range):
                                 #print('centered!')
-                                GPIO.output(4,GPIO.HIGH)
+                                if (on_target == 0):
+                                    on_target = time.time()
+                                    GPIO.output(pin_led, GPIO.HIGH)
+                                elif (time.time() - on_target > 2):
+                                    engage_target()
+                                    on_target = 0
+                                    print('Target engaged.')
+                                    done = True
+
                             else:
+                                GPIO.output(pin_led, GPIO.LOW)
+                                on_target = 0
                                 if (x_center < x_range[0]):
                                     print("fly left")
                                 elif (x_center > x_range[len(x_range) - 1]):
                                     print("fly right")
                         else:
+                            GPIO.output(pin_led, GPIO.LOW)
+                            on_target = 0
                             if (y_center < y_range[0]):
                                 print("fly up")
                             elif (y_center > y_range[len(y_range) - 1]):
@@ -106,22 +122,30 @@ def streams():
             # When the pool is starved, wait a while for it to refill
             time.sleep(0.1)
 
+def engage_target():
+    GPIO.output(pin,GPIO.HIGH)
+    time.sleep(0.5)
+    GPIO.output(pin,GPIO.LOW)
+    GPIO.output(pin_led, GPIO.LOW)
 
 
 
+try:
+    with picamera.PiCamera() as camera:
+        pool = [ImageProcessor() for i in range(1)]
+        camera.resolution = (res_w, res_h)
+        camera.framerate = 10
+        camera.start_preview()
+        time.sleep(2)
+        camera.capture_sequence(streams(), use_video_port=True)
 
-
-with picamera.PiCamera() as camera:
-    pool = [ImageProcessor() for i in range(1)]
-    camera.resolution = (res_w, res_h)
-    camera.framerate = 10
-    camera.start_preview()
-    time.sleep(2)
-    camera.capture_sequence(streams(), use_video_port=True)
-
-# Shut down the processors in an orderly fashion
-while pool:
-    with lock:
-        processor = pool.pop()
-    processor.terminated = True
-    processor.join()
+    # Shut down the processors in an orderly fashion
+    while pool:
+        with lock:
+            processor = pool.pop()
+        processor.terminated = True
+        processor.join()
+except:
+    # In case if something went wrong, shutdown the laser.
+    GPIO.output(pin, GPIO.LOW)
+    GPIO.output(pin_led, GPIO.LOW)
