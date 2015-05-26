@@ -45,36 +45,43 @@ def imageprocessor(stream):
                 x_cluster.append(x)
                 y_cluster.append(y)
 
-    if (len(x_cluster) and len(y_cluster)):
-        x_center = round(sum(x_cluster)/len(x_cluster))
-        y_center = round(sum(y_cluster)/len(y_cluster))
-        if (y_center in y_range):
-            if (x_center in x_range):
-                #print('centered!')
-                if (on_target == 0):
-                    on_target = time.time()
-                    GPIO.output(pin_led, GPIO.HIGH)
-                elif (time.time() - on_target > 2):
-                    engage_target()
-                    on_target = 0
-                    print('Target engaged.')
-                    return True
+    if (len(x_cluster) == 0):
+        return False
 
-            else:
-                GPIO.output(pin_led, GPIO.LOW)
-                on_target = 0
-                if (x_center < x_range[0]):
-                    print("fly left")
-                elif (x_center > x_range[len(x_range) - 1]):
-                    print("fly right")
+    if (len(y_cluster) == 0):
+        return False
+    
+    x_center = round(sum(x_cluster)/len(x_cluster))
+    y_center = round(sum(y_cluster)/len(y_cluster))
+
+    if (y_center not in y_range):
+        GPIO.output(pin_led, GPIO.LOW)
+        on_target = 0
+        if (y_center < y_range[0]):
+            print("fly up")
         else:
-            GPIO.output(pin_led, GPIO.LOW)
-            on_target = 0
-            if (y_center < y_range[0]):
-                print("fly up")
-            elif (y_center > y_range[len(y_range) - 1]):
-                print("fly down")
+            print("fly down")
+        return False
 
+    if (x_center not in x_range):
+        GPIO.output(pin_led, GPIO.LOW)
+        on_target = 0
+        if (x_center < x_range[0]):
+            print("fly left")
+        else:
+            print("fly right")
+        return False
+    
+    
+    #print('centered!')
+    if (on_target == 0):
+        on_target = time.time()
+        GPIO.output(pin_led, GPIO.HIGH)
+    elif (time.time() - on_target > 2):
+        engage_target()
+        on_target = 0
+        print('Target engaged.')
+        return True    
 
 def engage_target():
     GPIO.output(pin,GPIO.HIGH)
@@ -99,7 +106,6 @@ try:
             if imageprocessor(stream):
                 break
 
-    
 except:
     # In case if something went wrong, shutdown the laser.
     GPIO.output(pin, GPIO.LOW)
