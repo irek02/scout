@@ -22,13 +22,14 @@ GPIO.output(pin_led,GPIO.LOW)
 done = False
 
 # Set the resolution and target boundaries.
-res_w = 30
-res_h = 20
+res_w = 50
+res_h = 40
 x_range = range(round(res_w / 2 - 1), round(res_w / 2 + 1))
 y_range = range(round(res_h / 2 - 1), round(res_h / 2 + 1))
 
 # Tracking target lock vars.
 on_target = 0
+target_lock_time = 2
 
 def imageprocessor(stream):
     global done
@@ -72,16 +73,18 @@ def imageprocessor(stream):
             print("fly right")
         return False
     
-    
-    #print('centered!')
+    # At this point the target is in the fire range.
+    # Ensure the target is locked and open fire.
+    print('centered!')
     if (on_target == 0):
         on_target = time.time()
         GPIO.output(pin_led, GPIO.HIGH)
-    elif (time.time() - on_target > 2):
+    elif (time.time() - on_target > target_lock_time):
         engage_target()
         on_target = 0
         print('Target engaged.')
-        return True    
+        done = True
+        return True
 
 def engage_target():
     GPIO.output(pin,GPIO.HIGH)
@@ -89,24 +92,26 @@ def engage_target():
     GPIO.output(pin,GPIO.LOW)
     GPIO.output(pin_led, GPIO.LOW)
 
+def stream_generator():
+    stream = io.BytesIO()
+    while not done:
+        stream.truncate()
+        stream.seek(0)
+        yield stream
+        imageprocessor(stream)
+        
 
 try:
     with picamera.PiCamera() as camera:
-        pool = [ImageProcessor() for i in range(1)]
         camera.resolution = (res_w, res_h)
         camera.framerate = 10
         camera.start_preview()
         time.sleep(2)
-        stream = io.BytesIO()
-        for foo in camera.capture_continuous(stream, format='jpeg'):
-            # Truncate the stream to the current position (in case
-            # prior iterations output a longer image)
-            stream.truncate()
-            stream.seek(0)
-            if imageprocessor(stream):
-                break
+        camera.capture_sequence(stream_generator(), use_video_port=True)
 
 except:
     # In case if something went wrong, shutdown the laser.
     GPIO.output(pin, GPIO.LOW)
     GPIO.output(pin_led, GPIO.LOW)
+
+GPIO.cleanup()
