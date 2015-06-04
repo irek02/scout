@@ -1,23 +1,22 @@
-res_w = 100
-res_h = 90
-x_range = range(round(res_w / 2 - 10), round(res_w / 2 + 10))
-y_range = range(round(res_h / 2 - 10), round(res_h / 2 + 10))
-grid = []
-i = 0
-
-f = open('/home/pi/scripts/tmp.txt', "w+")
+class ImageProcessor:
+    def get_loc(self):
+    	return 'up'
+    	
 
 
-for y in range(1, res_h):
-	f.write("\n")
-	for x in range(1, res_w):
-		f.write('(' + str(i) + ') ')
-		grid.insert(i, (x, y))
-		i = i + 1
+class Vehicle:
+	def __init__(self, img_processor):
+		self.img_processor = img_processor
 
-print(len(grid))
-print(grid[2183])
-f.close()
+	def seek_and_destroy(self):
+		return img_processor.get_loc()
+
+
+img_processor = ImageProcessor()
+veh = Vehicle(img_processor)
+
+print veh.seek_and_destroy()
+
 
 '''
 from PIL import Image
