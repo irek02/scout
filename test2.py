@@ -1,3 +1,23 @@
+import os.path
+import picamera
+import io
+
+with picamera.PiCamera() as camera:
+    stream = io.BytesIO()
+
+    #camera.capture(stream, use_video_port=True)
+    for foo in camera.capture_continuous(stream, format='jpeg', use_video_port=True):
+        # Truncate the stream to the current position (in case
+        # prior iterations output a longer image)
+        stream.truncate()
+        stream.seek(0)
+        print("Yielging")
+        if False:
+            break
+
+
+
+'''
 class ImageProcessor:
     def get_loc(self):
     	return 'up'
@@ -18,7 +38,7 @@ veh = Vehicle(img_processor)
 print veh.seek_and_destroy()
 
 
-'''
+
 from PIL import Image
 w = 640
 h = 480
