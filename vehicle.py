@@ -13,6 +13,8 @@ class Vehicle:
     def seek_and_destroy(self):
         print("seek")
         while not self.target_engaged:
+            print("seek")
+            time.sleep(0.5)
             target_loc = self.img_processor.get_target_loc()
 
             if not target_loc:
@@ -27,7 +29,7 @@ class Vehicle:
                     self.engage_target()
                     on_target = 0
                     print('Target engaged.')
-                    return
+                    break
                 continue
 
             self.led.off()
