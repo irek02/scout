@@ -15,7 +15,7 @@ vehicle = vehicle.Vehicle(img_processor)
 vehicle.seek_and_destroy()
 
 # Shutdown the laser.
-#GPIO.output(pin, GPIO.LOW)
-#GPIO.output(pin_led, GPIO.LOW)
+GPIO.output(pin, GPIO.LOW)
+GPIO.output(pin_led, GPIO.LOW)
 
 GPIO.cleanup()

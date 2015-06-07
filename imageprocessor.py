@@ -1,21 +1,22 @@
 import io
 from PIL import Image
 import threading
-import random
 import picamera
 import time
 
 class ImageProcessorThread(threading.Thread):
     def __init__(self):
         super(ImageProcessorThread, self).__init__()
-        self.target_loc = None
+
+        self.terminated = False
 
         self.res_w, self.res_h = (50, 40)
 
         self.cam = picamera.PiCamera()
         self.cam.resolution = (self.res_w, self.res_h)
         self.cam.framerate = 10
-        
+
+        self.target_loc = None        
         self.x_range = range(round(self.res_w / 2 - 1), round(self.res_w / 2 + 1))
         self.y_range = range(round(self.res_h / 2 - 1), round(self.res_h / 2 + 1))
         
@@ -23,7 +24,7 @@ class ImageProcessorThread(threading.Thread):
 
     def run(self):
         stream = io.BytesIO()
-        while True:
+        while not self.terminated:
             self.cam.capture(stream, format='jpeg', use_video_port=True)
             pixels = Image.open(stream).load()
             self.target_loc = self.calc_target_loc(pixels)

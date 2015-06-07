@@ -13,7 +13,7 @@ class Vehicle:
     def seek_and_destroy(self):
         print("seek")
         while not self.target_engaged:
-            print("seek")
+
             time.sleep(0.5)
             target_loc = self.img_processor.get_target_loc()
 
@@ -44,6 +44,8 @@ class Vehicle:
         self.laser.off()
         self.led.off()
         self.target_engaged = True
+
+        self.img_processor.terminated = True
 
     def move(self, direction):
         # Implement flight control here
