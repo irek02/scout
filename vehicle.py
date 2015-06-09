@@ -14,8 +14,10 @@ class Vehicle:
         print("seek")
         while not self.target_engaged:
 
-            time.sleep(0.5)
+            time.sleep(0.2)
             target_loc = self.img_processor.get_target_loc()
+
+            print(target_loc)
 
             if not target_loc:
                 #print("Target not found")
@@ -45,7 +47,7 @@ class Vehicle:
         self.led.off()
         self.target_engaged = True
 
-        self.img_processor.terminated = True
+        self.img_processor.target_destroyed()
 
     def move(self, direction):
         # Implement flight control here

@@ -2,41 +2,46 @@ import io
 from PIL import Image
 import threading
 import picamera
-import time
 
-class ImageProcessorThread(threading.Thread):
+class ImageStreamThread(threading.Thread):
     def __init__(self):
-        super(ImageProcessorThread, self).__init__()
+        super(ImageStreamThread, self).__init__()
 
         self.terminated = False
-
-        self.res_w, self.res_h = (50, 40)
-
         self.cam = picamera.PiCamera()
-        self.cam.resolution = (self.res_w, self.res_h)
-        self.cam.framerate = 10
+        self.cam.resolution = (50, 40)
 
-        self.target_loc = None        
-        self.x_range = range(round(self.res_w / 2 - 1), round(self.res_w / 2 + 1))
-        self.y_range = range(round(self.res_h / 2 - 1), round(self.res_h / 2 + 1))
-        
+        self.stream = io.BytesIO()
+
         self.start()
 
+    def get_resolution(self):
+        return self.cam.resolution
+
+    def get_stream(self):
+        return self.stream
+
     def run(self):
-        stream = io.BytesIO()
         while not self.terminated:
-            self.cam.capture(stream, format='jpeg', use_video_port=True)
-            pixels = Image.open(stream).load()
-            self.target_loc = self.calc_target_loc(pixels)
-            stream.truncate()
-            stream.seek(0)
+            self.stream.seek(0)
+            self.cam.capture(self.stream, format='jpeg', use_video_port=True)
+
+
+class ImageProcessor():
+    def __init__(self, img_stream_thr):
+        self.res_w, self.res_h = img_stream_thr.get_resolution()
+
+        self.img_stream_thr = img_stream_thr
+
+        self.x_range = range(round(self.res_w / 2 - 1), round(self.res_w / 2 + 1))
+        self.y_range = range(round(self.res_h / 2 - 1), round(self.res_h / 2 + 1))
+
+    def target_destroyed(self):
+        self.img_stream_thr.terminated = True
 
     def get_target_loc(self):
-        print(self.target_loc)
-        return self.target_loc
-
-    def getPixels(self):
-        return Image.open(self.stream).load()
+        pixels = Image.open(self.img_stream_thr.stream).load()
+        return self.calc_target_loc(pixels)
 
     def calc_target_loc(self, pixels):
         x_cluster = []
