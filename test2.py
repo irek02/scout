@@ -1,25 +1,44 @@
-res_w = 100
-res_h = 90
-x_range = range(round(res_w / 2 - 10), round(res_w / 2 + 10))
-y_range = range(round(res_h / 2 - 10), round(res_h / 2 + 10))
-grid = []
-i = 0
+import os.path
+import picamera
+import io
 
-f = open('/home/pi/scripts/tmp.txt', "w+")
+with picamera.PiCamera() as camera:
+    stream = io.BytesIO()
+
+    #camera.capture(stream, use_video_port=True)
+    for foo in camera.capture_continuous(stream, format='jpeg', use_video_port=True):
+        # Truncate the stream to the current position (in case
+        # prior iterations output a longer image)
+        stream.truncate()
+        stream.seek(0)
+        print("Yielging")
+        if False:
+            break
 
 
-for y in range(1, res_h):
-	f.write("\n")
-	for x in range(1, res_w):
-		f.write('(' + str(i) + ') ')
-		grid.insert(i, (x, y))
-		i = i + 1
-
-print(len(grid))
-print(grid[2183])
-f.close()
 
 '''
+class ImageProcessor:
+    def get_loc(self):
+    	return 'up'
+    	
+
+
+class Vehicle:
+	def __init__(self, img_processor):
+		self.img_processor = img_processor
+
+	def seek_and_destroy(self):
+		return img_processor.get_loc()
+
+
+img_processor = ImageProcessor()
+veh = Vehicle(img_processor)
+
+print veh.seek_and_destroy()
+
+
+
 from PIL import Image
 w = 640
 h = 480
