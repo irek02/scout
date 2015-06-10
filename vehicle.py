@@ -52,6 +52,10 @@ class Vehicle:
         # Implement flight control here
         direction
 
+    def shutdown(self):
+        self.led.shutdown()
+        self.laser.shutdown()
+
 class Pin:
     def __init__(self, pin):
         self.pin = pin
