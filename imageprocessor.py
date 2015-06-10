@@ -24,6 +24,7 @@ class ImageStreamThread(threading.Thread):
         return self.stream
 
     def shutdown(self):
+        print("Shutdown complete: Image Stream Thread")
         self.terminated = 1
 
     def run(self):
@@ -40,9 +41,6 @@ class ImageProcessor():
 
         self.x_range = range(round(self.res_w / 2 - 1), round(self.res_w / 2 + 1))
         self.y_range = range(round(self.res_h / 2 - 1), round(self.res_h / 2 + 1))
-
-    def target_destroyed(self):
-        #self.img_stream_thr.terminated = True
 
     def get_target_loc(self):
         pixels = Image.open(self.img_stream_thr.stream).load()

@@ -2,7 +2,8 @@ import time
 import RPi.GPIO as GPIO
 
 class Vehicle:
-    def __init__(self, img_processor):
+    def __init__(self, img_processor, shutdown_handlers):
+        shutdown_handlers.append(self.shutdown)
         self.img_processor = img_processor
         self.on_target = 0
         self.target_engaged = False
@@ -47,16 +48,18 @@ class Vehicle:
         self.led.off()
         self.target_engaged = True
 
-        self.img_processor.target_destroyed()
-
     def move(self, direction):
         # Implement flight control here
         direction
 
+    def shutdown(self):
+        self.led.shutdown()
+        self.laser.shutdown()
+
 class Pin:
     def __init__(self, pin):
         self.pin = pin
-        GPIO.setup(pin, GPIO.OUT)
+        GPIO.setup(pin, GPIO.OUT, initial=GPIO.LOW)
         GPIO.output(self.pin, GPIO.LOW)
 
     def on(self):
@@ -64,3 +67,8 @@ class Pin:
 
     def off(self):
         GPIO.output(self.pin, GPIO.LOW)
+
+    def shutdown(self):
+        self.off()
+        GPIO.cleanup(self.pin)
+        print("Shutdown complete: Pin # %s" % self.pin)
