@@ -1,22 +1,23 @@
 import time
-import RPi.GPIO as GPIO
 
 class Vehicle:
-    def __init__(self, img_processor, shutdown_handlers):
-        shutdown_handlers.append(self.shutdown)
-        self.img_processor = img_processor
+    def __init__(self, camera, target_loc, led, laser):
+        self.camera = camera
+        self.target_loc = target_loc
+        self.led = led
+        self.laser = laser
+
         self.on_target = 0
         self.target_engaged = False
         self.target_lock_time = 2
-        self.led = Pin(15)
-        self.laser = Pin(18)
         
     def seek_and_destroy(self):
         print("seek")
         while not self.target_engaged:
 
-            time.sleep(0.2)
-            target_loc = self.img_processor.get_target_loc()
+            time.sleep(0.5)
+            stream = self.camera.get_stream()
+            target_loc = self.target_loc.get_target_loc(stream)
 
             print(target_loc)
 
@@ -34,12 +35,15 @@ class Vehicle:
                     print('Target engaged.')
                     break
                 continue
-
+            
+            self.on_target = 0
             self.led.off()
 
             if target_loc in ['up', 'down', 'left', 'right']:
                 self.move(target_loc)
                 continue
+
+        self.shutdown_procedure()
 
     def engage_target(self):
         self.laser.on()
@@ -52,23 +56,7 @@ class Vehicle:
         # Implement flight control here
         direction
 
-    def shutdown(self):
-        self.led.shutdown()
-        self.laser.shutdown()
-
-class Pin:
-    def __init__(self, pin):
-        self.pin = pin
-        GPIO.setup(pin, GPIO.OUT, initial=GPIO.LOW)
-        GPIO.output(self.pin, GPIO.LOW)
-
-    def on(self):
-        GPIO.output(self.pin, GPIO.HIGH)
-
-    def off(self):
-        GPIO.output(self.pin, GPIO.LOW)
-
-    def shutdown(self):
-        self.off()
-        GPIO.cleanup(self.pin)
-        print("Shutdown complete: Pin # %s" % self.pin)
+    def shutdown_procedure(self):
+        self.camera.shutdown_procedure()
+        self.led.shutdown_procedure()
+        self.laser.shutdown_procedure()

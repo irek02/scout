@@ -1,24 +1,21 @@
-import RPi.GPIO as GPIO
 import vehicle
-import imageprocessor
+import components
 import time
-import sys
 
-GPIO.setmode(GPIO.BCM)
+resolution = (50, 40)
 
-shutdown_handlers = []
+camera = components.Camera(resolution)
+target_loc = components.TargetLocator(resolution)
+led = components.Pin(15)
+laser = components.Pin(18)
+
+time.sleep(1)
+
+vehicle = vehicle.Vehicle(camera, target_loc, led, laser)
+
 try:
-    img_stream_thr = imageprocessor.ImageStreamThread(shutdown_handlers)
-    img_processor = imageprocessor.ImageProcessor(img_stream_thr)
-
-    time.sleep(1)
-
-    vehicle = vehicle.Vehicle(img_processor, shutdown_handlers)
     vehicle.seek_and_destroy()
-
-finally:
-    print("Shutting down")
-    for handler in shutdown_handlers:
-        handler()
+except:
+    vehicle.shutdown_procedure()
 
 

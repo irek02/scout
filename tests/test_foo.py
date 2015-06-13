@@ -33,3 +33,6 @@ class ImageStreamThreadDouble:
 
 suite = unittest.TestLoader().loadTestsFromTestCase(TestStringMethods)
 unittest.TextTestRunner(verbosity=2).run(suite)
+
+
+# @Todo testVehicleComponentInterface for implementing shutdown method.

@@ -1,29 +1,25 @@
 import io
+import RPi.GPIO as GPIO
 from PIL import Image
 import threading
 import picamera
 
-class ImageStreamThread(threading.Thread):
-    def __init__(self, shutdown_handlers):
-        super(ImageStreamThread, self).__init__()
-
-        shutdown_handlers.append(self.shutdown)
+class Camera(threading.Thread):
+    def __init__(self, resolution):
+        super(Camera, self).__init__()
 
         self.terminated = False
+
         self.cam = picamera.PiCamera()
-        self.cam.resolution = (50, 40)
+        self.cam.resolution = resolution
 
         self.stream = io.BytesIO()
-
         self.start()
-
-    def get_resolution(self):
-        return self.cam.resolution
 
     def get_stream(self):
         return self.stream
 
-    def shutdown(self):
+    def shutdown_procedure(self):
         print("Shutdown complete: Image Stream Thread")
         self.terminated = 1
 
@@ -33,17 +29,15 @@ class ImageStreamThread(threading.Thread):
             self.cam.capture(self.stream, format='jpeg', use_video_port=True)
 
 
-class ImageProcessor():
-    def __init__(self, img_stream_thr):
-        self.res_w, self.res_h = img_stream_thr.get_resolution()
-
-        self.img_stream_thr = img_stream_thr
+class TargetLocator():
+    def __init__(self, resolution):
+        self.res_w, self.res_h = resolution
 
         self.x_range = range(round(self.res_w / 2 - 1), round(self.res_w / 2 + 1))
         self.y_range = range(round(self.res_h / 2 - 1), round(self.res_h / 2 + 1))
 
-    def get_target_loc(self):
-        pixels = Image.open(self.img_stream_thr.stream).load()
+    def get_target_loc(self, stream):
+        pixels = Image.open(stream).load()
         return self.calc_target_loc(pixels)
 
     def calc_target_loc(self, pixels):
@@ -76,3 +70,21 @@ class ImageProcessor():
                 return 'right'
         
         return 'center'
+
+class Pin:
+    def __init__(self, pin):
+        self.pin = pin
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(pin, GPIO.OUT, initial=GPIO.LOW)
+        GPIO.output(self.pin, GPIO.LOW)
+
+    def on(self):
+        GPIO.output(self.pin, GPIO.HIGH)
+
+    def off(self):
+        GPIO.output(self.pin, GPIO.LOW)
+
+    def shutdown_procedure(self):
+        self.off()
+        GPIO.cleanup(self.pin)
+        print("Shutdown complete: Pin # %s" % self.pin)
