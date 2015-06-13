@@ -1,10 +1,14 @@
 import vehicle
 import components
 import time
+import picamera
 
 resolution = (50, 40)
 
-camera     = components.Camera(resolution)
+picam = picamera.PiCamera()
+picam.resolution = resolution
+
+camera     = components.Camera(picam)
 target_loc = components.TargetLocator(resolution)
 led        = components.Pin(15)
 laser      = components.Pin(18)
@@ -17,5 +21,3 @@ try:
     vehicle.seek_and_destroy()
 except:
     vehicle.shutdown_procedure()
-
-

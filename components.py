@@ -2,16 +2,15 @@ import io
 import RPi.GPIO as GPIO
 from PIL import Image
 import threading
-import picamera
+
 
 class Camera(threading.Thread):
-    def __init__(self, resolution):
+    def __init__(self, cam):
         super(Camera, self).__init__()
 
         self.terminated = False
 
-        self.cam = picamera.PiCamera()
-        self.cam.resolution = resolution
+        self.cam = cam
 
         self.stream = io.BytesIO()
         self.start()
