@@ -20,6 +20,9 @@ class TestStringMethods(unittest.TestCase):
     location = locator.get_target_loc('tests/images/left.jpg')
     self.assertEqual(location, "left")
 
+    location = locator.get_target_loc('tests/images/center.jpg')
+    self.assertEqual(location, "center")
+
 
 suite = unittest.TestLoader().loadTestsFromTestCase(TestStringMethods)
 unittest.TextTestRunner(verbosity=2).run(suite)
