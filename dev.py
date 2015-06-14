@@ -1,23 +1,61 @@
 import os.path
 import picamera
 import io
-
-with picamera.PiCamera() as camera:
-    stream = io.BytesIO()
-
-    #camera.capture(stream, use_video_port=True)
-    for foo in camera.capture_continuous(stream, format='jpeg', use_video_port=True):
-        # Truncate the stream to the current position (in case
-        # prior iterations output a longer image)
-        stream.truncate()
-        stream.seek(0)
-        print("Yielging")
-        if False:
-            break
+from PIL import Image
+import components
+import time
 
 
+
+
+resolution = (50, 40)
+locator = components.TargetLocator(resolution)
+img = Image.open('left.jpg')
+pixels = img.load()
+print(locator.calc_target_loc(pixels))
 
 '''
+try:
+    with picamera.PiCamera() as camera:
+        camera.resolution = resolution
+        stream = io.BytesIO()
+
+        parser = components.StreamParser()
+
+        #camera.capture(stream, use_video_port=True)
+        for foo in camera.capture_continuous(stream, format='jpeg', use_video_port=True):
+            time.sleep(0.8)
+            img = Image.open(stream)
+            
+
+            loc = locator.get_target_loc(stream)
+            if (loc == 'right'):
+                img.save('right.jpg')
+                break
+            
+            print(loc)
+            # Truncate the stream to the current position (in case
+            # prior iterations output a longer image)
+            stream.truncate()
+            stream.seek(0)
+            if False:
+                break
+
+except:
+    f.close()
+
+'''
+'''
+
+
+f = open('/home/pi/scripts/tmp.txt', "rb")
+bytes = f.read()
+# stream = io.BytesIO(bytes)
+loc = locator.get_target_loc(bytes)
+f.close()
+
+
+
 class ImageProcessor:
     def get_loc(self):
     	return 'up'

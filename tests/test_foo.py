@@ -1,34 +1,24 @@
 import unittest
 import io
-import imageprocessor
+import components
 import vehicle
 
 class TestStringMethods(unittest.TestCase):
-  def setUp(self):
-    print("Booo")
+  def test_TargetLocator(self):
+    resolution = (50, 40)
+    locator = components.TargetLocator(resolution)
+    
+    location = locator.get_target_loc('tests/images/up.jpg')
+    self.assertEqual(location, "up")
 
-  def test_imageprocessor(self):
-    thr = ImageStreamThreadDouble()
+    location = locator.get_target_loc('tests/images/right.jpg')
+    self.assertEqual(location, "right")
 
-    # Give the stream that represents target on the lest
-    thr.stream = self.import_from_file()
+    location = locator.get_target_loc('tests/images/down.jpg')
+    self.assertEqual(location, "down")
 
-    img_pr = imageprocessor.ImageProcessor(thr)
-    self.assertEqual(img_pr.get_target_loc(), 'left')
-
-  def import_from_file(self):
-    return ''
-
-
-
-class ImageStreamThreadDouble:
-  def __init__(self):      
-      self.stream = io.BytesIO()
-
-  def get_resolution(self):
-    return (50, 40)
-
-
+    location = locator.get_target_loc('tests/images/left.jpg')
+    self.assertEqual(location, "left")
 
 
 suite = unittest.TestLoader().loadTestsFromTestCase(TestStringMethods)

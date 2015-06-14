@@ -16,6 +16,7 @@ class Vehicle:
         while not self.target_engaged:
 
             time.sleep(0.5)
+
             stream = self.camera.get_stream()
             target_loc = self.target_loc.get_target_loc(stream)
 

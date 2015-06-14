@@ -5,13 +5,10 @@ import threading
 
 
 class Camera(threading.Thread):
-    def __init__(self, cam):
+    def __init__(self, picam):
         super(Camera, self).__init__()
-
+        self.picam = picam
         self.terminated = False
-
-        self.cam = cam
-
         self.stream = io.BytesIO()
         self.start()
 
@@ -19,13 +16,13 @@ class Camera(threading.Thread):
         return self.stream
 
     def shutdown_procedure(self):
-        print("Shutdown complete: Image Stream Thread")
+        print("shutdown camera")
         self.terminated = 1
 
     def run(self):
         while not self.terminated:
             self.stream.seek(0)
-            self.cam.capture(self.stream, format='jpeg', use_video_port=True)
+            self.picam.capture(self.stream, format='jpeg', use_video_port=True)
 
 
 class TargetLocator():
@@ -70,6 +67,7 @@ class TargetLocator():
         
         return 'center'
 
+        
 class Pin:
     def __init__(self, pin):
         self.pin = pin
