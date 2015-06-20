@@ -52,14 +52,12 @@ class TargetLocator():
         y_center = round(sum(y_cluster)/len(y_cluster))
 
         if (y_center not in self.y_range):
-            on_target = 0
             if (y_center < self.y_range[0]):
                 return 'up'
             else:
                 return 'down'
 
         if (x_center not in self.x_range):
-            on_target = 0
             if (x_center < self.x_range[0]):
                 return 'left'
             else:

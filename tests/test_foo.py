@@ -1,13 +1,11 @@
 import unittest
-import io
 import components
-import vehicle
 
 class TestStringMethods(unittest.TestCase):
   def test_TargetLocator(self):
     resolution = (50, 40)
     locator = components.TargetLocator(resolution)
-    
+
     location = locator.get_target_loc('tests/images/up.jpg')
     self.assertEqual(location, "up")
 
