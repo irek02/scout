@@ -1,10 +1,10 @@
 import unittest
-import components
+from components.targetlocator import TargetLocator
 
-class TestStringMethods(unittest.TestCase):
+class TestScout(unittest.TestCase):
   def test_TargetLocator(self):
     resolution = (50, 40)
-    locator = components.TargetLocator(resolution)
+    locator = TargetLocator(resolution)
 
     location = locator.get_target_loc('tests/images/up.jpg')
     self.assertEqual(location, "up")
@@ -22,7 +22,7 @@ class TestStringMethods(unittest.TestCase):
     self.assertEqual(location, "center")
 
 
-suite = unittest.TestLoader().loadTestsFromTestCase(TestStringMethods)
+suite = unittest.TestLoader().loadTestsFromTestCase(TestScout)
 unittest.TextTestRunner(verbosity=2).run(suite)
 
 

@@ -3,6 +3,10 @@ import components
 import time
 import picamera
 
+from components.targetlocator import TargetLocator
+from components.camera import Camera
+from components.gpiopin import Pin
+
 resolution = (50, 40)
 
 picam = picamera.PiCamera()
