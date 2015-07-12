@@ -1,1 +1,9 @@
-language: php
+language: python
+python:
+  - "3.3"
+
+install:
+  - sudo apt-get install python3-pip
+  - sudo pip3 install pillow
+
+script: python3 -m unittest discover tests
