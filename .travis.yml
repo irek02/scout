@@ -3,7 +3,8 @@ python:
   - "3.3"
 
 install:
-  - sudo apt-get install python3-pip
+  - sudo apt-get install python3-setuptools
+  - sudo easy_install3 pip
   - sudo pip3 install pillow
 
 script: python3 -m unittest discover tests
